@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>URL Shortener</h1>
+
+    <form id="urlForm">
+        <div class="form-group">
+            <label for="urlInput">Enter URL to shorten:</label>
+            <input type="text" id="urlInput" name="url" placeholder="https://example.com/long/url" required>
+        </div>
+        <button type="submit">Shorten URL</button>
+    </form>
+
+    <div id="result">
+        <h2>Shortened URL:</h2>
+        <div class="url-display">
+            <strong>Original URL:</strong> <span id="originalUrl"></span>
+        </div>
+        <div class="url-display">
+            <strong>Short URL:</strong> <a id="shortUrl" href="" target="_blank"></a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value;
+
+            try {
+                const response = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert('Error: ' + (error.error || 'Failed to shorten URL'));
+                    return;
+                }
+
+                const data = await response.json();
+
+                document.getElementById('originalUrl').textContent = data.originalUrl;
+                document.getElementById('shortUrl').textContent = data.shortUrl;
+                document.getElementById('shortUrl').href = data.shortUrl;
+
+                document.getElementById('result').style.display = 'block';
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
