@@ -9,6 +9,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.url}`);
+  next();
+});
+
 function generateShortCode() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const codeLength = 6;
@@ -44,6 +50,8 @@ app.post('/api/shorten', (req, res) => {
 
   const shortUrl = `${req.protocol}://${req.get('host')}/${shortCode}`;
 
+  console.log(`created short code: ${shortCode} for ${url}`);
+
   res.json({
     originalUrl: url,
     shortUrl: shortUrl,
@@ -57,9 +65,11 @@ app.get('/:shortCode', (req, res) => {
   const originalUrl = urlDatabase.get(shortCode);
 
   if (!originalUrl) {
+    console.log(`short code not found: ${shortCode}`);
     return res.status(404).send('short URL not found');
   }
 
+  console.log(`redirecting ${shortCode} to ${originalUrl}`);
   res.redirect(originalUrl);
 });
 
